@@ -178,7 +178,7 @@ func UseMockedTerminal() *TerminalMock {
 	return defaultFinder.UseMockedTerminal()
 }
 
-func (f *finder) UseMockedTerminal() *TerminalMock {
+func (f *Finder) UseMockedTerminal() *TerminalMock {
 	m := &TerminalMock{}
 	f.term = m
 	return m

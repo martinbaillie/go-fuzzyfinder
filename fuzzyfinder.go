@@ -27,7 +27,7 @@ var (
 )
 
 var (
-	defaultFinder = &finder{}
+	defaultFinder = &Finder{}
 )
 
 type state struct {
@@ -58,7 +58,7 @@ type state struct {
 	selectionIdx int
 }
 
-type finder struct {
+type Finder struct {
 	term      terminal
 	stateMu   sync.RWMutex
 	state     state
@@ -66,7 +66,7 @@ type finder struct {
 	opt       *opt
 }
 
-func (f *finder) initFinder(items []string, matched []matching.Matched, opts []Option) error {
+func (f *Finder) initFinder(items []string, matched []matching.Matched, opts []Option) error {
 	if f.term == nil {
 		f.term = &termImpl{}
 	}
@@ -100,7 +100,7 @@ func (f *finder) initFinder(items []string, matched []matching.Matched, opts []O
 }
 
 // _draw is used from draw with a timer.
-func (f *finder) _draw() {
+func (f *Finder) _draw() {
 	width, height := f.term.size()
 	f.term.clear(termbox.ColorDefault, termbox.ColorDefault)
 
@@ -183,7 +183,7 @@ func (f *finder) _draw() {
 	}
 }
 
-func (f *finder) _drawPreview() {
+func (f *Finder) _drawPreview() {
 	if f.opt.previewFunc == nil {
 		return
 	}
@@ -271,7 +271,7 @@ func (f *finder) _drawPreview() {
 	}
 }
 
-func (f *finder) draw(d time.Duration) {
+func (f *Finder) draw(d time.Duration) {
 	f.stateMu.RLock()
 	defer f.stateMu.RUnlock()
 
@@ -288,7 +288,7 @@ func (f *finder) draw(d time.Duration) {
 // readKey reads a key input.
 // It returns ErrAbort if esc, CTRL-C or CTRL-D keys are inputted.
 // Also, it returns errEntered if enter key is inputted.
-func (f *finder) readKey() error {
+func (f *Finder) readKey() error {
 	switch e := f.term.pollEvent(); e.Type {
 	case termbox.EventKey:
 		switch e.Key {
@@ -429,7 +429,7 @@ func (f *finder) readKey() error {
 	return nil
 }
 
-func (f *finder) filter() {
+func (f *Finder) filter() {
 	f.stateMu.Lock()
 	defer f.stateMu.Unlock()
 
@@ -457,7 +457,7 @@ func (f *finder) filter() {
 	}
 }
 
-func (f *finder) find(slice interface{}, itemFunc func(i int) string, opts []Option) ([]int, error) {
+func (f *Finder) find(slice interface{}, itemFunc func(i int) string, opts []Option) ([]int, error) {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
 		return nil, errors.Errorf("the first argument must be a slice, but got %T", slice)
@@ -533,7 +533,7 @@ func Find(slice interface{}, itemFunc func(i int) string, opts ...Option) (int, 
 	return defaultFinder.Find(slice, itemFunc, opts...)
 }
 
-func (f *finder) Find(slice interface{}, itemFunc func(i int) string, opts ...Option) (int, error) {
+func (f *Finder) Find(slice interface{}, itemFunc func(i int) string, opts ...Option) (int, error) {
 	res, err := f.find(slice, itemFunc, opts)
 	if err != nil {
 		return 0, err
@@ -547,11 +547,16 @@ func FindMulti(slice interface{}, itemFunc func(i int) string, opts ...Option) (
 	return defaultFinder.FindMulti(slice, itemFunc, opts...)
 }
 
-func (f *finder) FindMulti(slice interface{}, itemFunc func(i int) string, opts ...Option) ([]int, error) {
+func (f *Finder) FindMulti(slice interface{}, itemFunc func(i int) string, opts ...Option) ([]int, error) {
 	opts = append(opts, withMulti())
 	return f.find(slice, itemFunc, opts)
 }
 
 func isInTesting() bool {
 	return flag.Lookup("test.v") != nil
+}
+
+// NewFinder instantiates a new Finder struct.
+func NewFinder() *Finder {
+	return &Finder{}
 }

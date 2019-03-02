@@ -1,10 +1,10 @@
 package fuzzyfinder
 
-func New() *finder {
-	return &finder{}
+func New() *Finder {
+	return &Finder{}
 }
 
-func NewWithMockedTerminal() (*finder, *TerminalMock) {
+func NewWithMockedTerminal() (*Finder, *TerminalMock) {
 	f := New()
 	m := f.UseMockedTerminal()
 	w, h := 60, 10 // A normally value.
